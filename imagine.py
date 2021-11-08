@@ -7,6 +7,12 @@ from tkinter import filedialog, ttk
 from PIL import Image
 
 
+def check_params(dir, max_size):
+    '''Making sure directory exists and size entered is valid'''
+    if os.path.isdir(dir) and max_size.isdigit():
+        return True
+    return False
+
 def resize_images(dir, max_size):
     '''getting content of chosen directory, opening it one by one and resizing'''
     files = os.listdir(dir)
@@ -22,6 +28,7 @@ def resize_images(dir, max_size):
             im.thumbnail(size)
             os.chdir(thumbnails_dir)
             im.save(file + ".thumbnail", "JPEG")
+
 
 def create_new_subdir(dir):
     '''Creating subdirectory inside images directory to store resized images'''
@@ -59,20 +66,20 @@ class Imagine:
         max_size_entry.grid(column=3, row=3, sticky=(W, E))
 
         # OK and cancel buttons
-        ttk.Button(mainframe, text="OK", command=self.check_params).grid(column=2, row=4, sticky=W)
+        ttk.Button(mainframe, text="OK", command=self.finalize).grid(column=2, row=4, sticky=W)
         ttk.Button(mainframe, text="Cancel", command=lambda : root.destroy()).grid(column=3, row=4, sticky=W)
 
         # Adding aditional padding and focusing coursor in dialog box
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
         images_dir_entry.focus()
-        root.bind("<Return>", self.check_params) # Binding hitting enter with check_params() function
+        root.bind("<Return>", self.finalize) # Binding hitting enter with check_params() function
 
-    def check_params(self, *args):
-        '''Checking directory and size and passing it to actual resizing function'''
+    def finalize(self, *args):
+        '''Checking parameters, passing to actual resizing function and killing the GUI'''
         image_dir = self.images_dir.get()
         max_size = self.max_size.get()
-        if os.path.isdir(image_dir) and max_size.isdigit():
+        if check_params(image_dir, max_size):
             self.root.destroy() # Killing the dialog window
             resize_images(image_dir, int(max_size))
         print(image_dir, max_size)
