@@ -9,25 +9,29 @@ from PIL import Image
 
 def check_params(dir, max_size):
     '''Making sure directory exists and size entered is valid'''
-    if os.path.isdir(dir) and max_size.isdigit():
-        return True
-    return False
+    if not os.path.isdir(dir):
+        print("Directory entered is not valid!")
+        return False
+    if not max_size.isdigit():
+        print("Max size must be an integer!")
+        return False
+    return True
 
 def resize_images(dir, max_size):
     '''getting content of chosen directory, opening it one by one and resizing'''
     files = os.listdir(dir)
     size = max_size, max_size
-    print("{} contains following files:".format(dir))
     thumbnails_dir = create_new_subdir(dir)
     for file in files:
         file_dir = os.path.join(dir, file)
         if os.path.isdir(file_dir):
             continue
         with Image.open(file_dir) as im:
+            if im.size[0] > max_size or im.size[1] > max_size:
+                im.thumbnail(size)
             print("{:<20} - {} x {} pixels".format(file, im.size[0], im.size[1]))
-            im.thumbnail(size)
             os.chdir(thumbnails_dir)
-            im.save(file + ".thumbnail", "JPEG")
+            im.save(file, "JPEG")
 
 
 def create_new_subdir(dir):
@@ -38,6 +42,13 @@ def create_new_subdir(dir):
     path = os.path.join(dir, "thumbnails{}".format(str(subdir_count)))
     os.mkdir(path)
     return path
+
+
+def initialize_gui():
+    '''Initializing Imagine class with root as a parent -- GUI'''
+    root = Tk()
+    Imagine(root)
+    root.mainloop()
 
 class Imagine:
     '''Dialog window class Tkinter'''
@@ -85,10 +96,20 @@ class Imagine:
         print(image_dir, max_size)
 
 def main():
-    '''Initializing Imagine class with root as a parent -- GUI'''
-    root = Tk()
-    Imagine(root)
-    root.mainloop()
+    '''Checking for command line arguments to pass to resizing function'''
+    if len(sys.argv) == 3:
+        image_dir = sys.argv[1]
+        max_size = sys.argv[2]
+        if check_params(image_dir, max_size):
+            resize_images(image_dir, int(max_size))
+        else:
+            print('''
+                To use command line input use following pattern:
+                $ imagine <images directory> <maximum size>
+            ''')
+            initialize_gui()
+    else:
+        initialize_gui()
 
 
 if __name__ == '__main__':
