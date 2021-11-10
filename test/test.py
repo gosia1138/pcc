@@ -6,19 +6,6 @@ from io import StringIO
 from unittest.mock import patch
 from .context import *
 
-class TestCheckParams(unittest.TestCase):
-
-    def test_wrong_path(self):
-        '''Returns false when passed non-existent path'''
-        data = ("/non/existent/path", 500)
-        result = check_params(*data)
-        self.assertFalse(result)
-
-    def test_wrong_size(self):
-        '''Returns false when passed string as max_size'''
-        data = ("/", "non digit input")
-        result = check_params(*data)
-        self.assertFalse(result)
 
 class TestValidFilename(unittest.TestCase):
 

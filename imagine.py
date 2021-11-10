@@ -3,30 +3,45 @@ import os
 import re
 import shutil
 import sys
-from tkinter import *
-from tkinter import filedialog, ttk
 from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 
 
-def check_params(dir, max_size):
-    '''Making sure directory exists and size entered is valid'''
+def create_source_list(dir):
+    '''Returning list of dictionaries representing images contained in the directory'''
     if not os.path.isdir(dir):
-        print("Directory entered is not valid!")
-        return False
-    if not max_size.isdigit():
-        print("Max size must be an integer!")
-        return False
-    return True
+        sys.exit("Entered directory is not valid!")
+    source = []
+    files = os.listdir(dir)
+    accepted_extensions = ('jpg', 'jpeg')
+    for file in files:
+        file_path = os.path.join(dir, file)
+        if os.path.isdir(file_path):
+            continue    # skip directories
+        if not file.lower().endswith(accepted_extensions):
+            continue    # skip files that do not have accepted extensions
+        source.append({
+                'file': file,
+                'full_path': file_path,
+                'dir': dir,
+            })
+    return source
 
-
-def check_valid_image(dir):
-    '''Checking if the file is a valid image file that can be resized'''
-    accepted_extensions = ('jpg', 'jpeg', 'png', 'gif', 'bmp')
-    if os.path.isdir(dir):
-        return False
-    if not dir.lower().endswith(accepted_extensions):
-        return False
-    return True
+def extract_exif(im):
+    exif_data = {}
+    info = im._getexif()
+    if info:
+        for tag, value in info.items():
+            decoded = TAGS.get(tag, tag)
+            if decoded == "GPSInfo":
+                gps_data = {}
+                for t in value:
+                    sub_decoded = GPSTAGS.get(t, t)
+                    gps_data[sub_decoded] = value[t]
+                exif_data[decoded] = gps_data
+            else:
+                exif_data[decoded] = value
+    return exif_data
 
 
 def check_valid_filename(filename):
@@ -38,37 +53,29 @@ def check_valid_filename(filename):
     return False
 
 
-def resize_images(dir, max_size):
-    '''getting content of chosen directory, opening it one by one and resizing'''
-    files = os.listdir(dir)
+def resize_images(source, max_size):
+    '''getting paths of chosen directory, opening it one by one and resizing'''
     size = max_size, max_size
-    thumbnails_dir = create_new_subdir(dir, "{}px_".format(str(max_size)))
-    for file in files:
-        file_dir = os.path.join(dir, file)
-        if not check_valid_image(file_dir):
-            continue
-        with Image.open(file_dir) as im:
+    thumbnails_dir = create_new_subdir(source[0]['dir'], "{}px_".format(str(max_size)))
+    for image in source:
+        with Image.open(image['full_path']) as im:
             if im.size[0] > max_size or im.size[1] > max_size:
                 im.thumbnail(size)
-            print("{:<20} - {} x {} pixels".format(file, im.size[0], im.size[1]))
-            exif = im.info.get("exif", b'')
+            print("{:<20} - {} x {} pixels".format(image['file'], im.size[0], im.size[1]))
+            exif_dict = extract_exif(im)
             os.chdir(thumbnails_dir)
-            im.save(file, "JPEG", exif=exif)
+            im.save(image['file'], "JPEG", exif=im.getexif())
 
 
-def rename_images(dir, name_pattern):
+def rename_images(source, name_pattern):
     '''renaming images with proposed pattern followed by incrementing numbers'''
-    files = os.listdir(dir)
-    renamed_files_dir = create_new_subdir(dir, name_pattern)
+    renamed_files_dir = create_new_subdir(source[0]['dir'], name_pattern)
     file_count = 0
-    for file in files:
-        src = os.path.join(dir, file)
-        if not check_valid_image(src):
-            continue
-        filename, file_extension = os.path.splitext(src)
+    for image in source:
+        filename, file_extension = os.path.splitext(image['file'])
         new_name = name_pattern + str(file_count) + file_extension
-        dst = os.path.join(renamed_files_dir, new_name)
-        shutil.copy2(src, dst)
+        destination = os.path.join(renamed_files_dir, new_name)
+        shutil.copy2(image['full_path'], destination)
         file_count += 1
 
 
@@ -82,80 +89,31 @@ def create_new_subdir(dir, name):
     return path
 
 
-def initialize_gui():
-    '''Initializing Imagine class with root as a parent -- GUI'''
-    root = Tk()
-    Imagine(root)
-    root.mainloop()
-
-class Imagine:
-    '''Dialog window class Tkinter'''
-
-    def __init__(self, root):
-        self.root = root
-
-        root.title("Imagine - bulk image manipulator")
-        # Creating the main frame
-        mainframe = ttk.Frame(root, padding=10)
-        mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-
-        # creating the widget with mainframe as a parent - image directory
-        ttk.Label(mainframe, text="Enter images directory:").grid(column=0, columnspan=4, row=0, sticky=W)
-        self.images_dir = StringVar()
-        images_dir_entry = ttk.Entry(mainframe, width=40, textvariable=self.images_dir)
-        images_dir_entry.grid(column=0, row=1, columnspan=4, sticky=(W, E))
-        ttk.Label(mainframe, textvariable=self.images_dir).grid(column=0, columnspan=4, row=2, sticky=(W, E))
-
-        # enter maximum size of images
-        ttk.Label(mainframe, text="Enter maximum size in pixels: ").grid(column=0, columnspan=3, row=3, sticky=W)
-        self.max_size = StringVar()
-        max_size_entry = ttk.Entry(mainframe, width=10, textvariable=self.max_size)
-        max_size_entry.grid(column=3, row=3, sticky=(W, E))
-
-        # OK and cancel buttons
-        ttk.Button(mainframe, text="OK", command=self.finalize).grid(column=2, row=4, sticky=W)
-        ttk.Button(mainframe, text="Cancel", command=lambda : root.destroy()).grid(column=3, row=4, sticky=W)
-
-        # Adding aditional padding and focusing coursor in dialog box
-        for child in mainframe.winfo_children():
-            child.grid_configure(padx=5, pady=5)
-        images_dir_entry.focus()
-        root.bind("<Return>", self.finalize) # Binding hitting enter with check_params() function
-
-    def finalize(self, *args):
-        '''Checking parameters, passing to actual resizing function and killing the GUI'''
-        image_dir = self.images_dir.get()
-        max_size = self.max_size.get()
-        if check_params(image_dir, max_size):
-            self.root.destroy() # Killing the dialog window
-            resize_images(image_dir, int(max_size))
-        print(image_dir, max_size)
-
 def main():
+    # TEMPORARY CLI
     '''Checking for command line arguments to pass to resizing function'''
     if len(sys.argv) == 4:
-        image_dir = sys.argv[2]
-        if sys.argv[1].lower() == '--resize':
+        source_dir = create_source_list(sys.argv[2])
+        # ------RESIZE------
+        if sys.argv[1] in ('-R', '--resize'):
             max_size = sys.argv[3]
-            if check_params(image_dir, max_size):
-                resize_images(image_dir, int(max_size))
-        elif sys.argv[1].lower() == '--rename':
+            if not max_size.isdigit():
+                sys.exit("Size parameter must be an integer!")
+            resize_images(source_dir, int(max_size))
+        # ------RENAME------
+        elif sys.argv[1] in ('-r', '--rename'):
             new_name = sys.argv[3]
-            rename_images(image_dir, new_name)
+            rename_images(source_dir, new_name)
 
-        else:
-            print('''
-                To use command line input use following pattern:
-                FOR RESIZING:
-                $ ./imagine --resize <images directory> <maximum size>
-                FOR RENAMING:
-                $ ./imagine --rename <images directory> <name pattern>
-            ''')
-            initialize_gui()
     else:
-        initialize_gui()
+        sys.exit('''
+To use command line input use following pattern:
+
+FOR RESIZING:
+$ ./imagine --resize <images directory> <maximum size>
+
+FOR RENAMING:
+$ ./imagine --rename <images directory> <name pattern>''')
 
 
 if __name__ == '__main__':
