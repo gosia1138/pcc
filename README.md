@@ -1,2 +1,2 @@
 # imagine
-Bulk image resizing script
+Script to sort pictures dumped from mobile phone or digital camera.
