@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
+
 import os
-import re
-import shutil
 import sys
+from datetime import datetime
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 
 
 class ImageMeta():
     def __init__(self, file_path, file_name, file_extension):
+        '''extract file info from path and collect other data from exif'''
         self.path = file_path
         self.name = file_name
         self.type = file_extension
-        img_data = self.extract_data()
-        self.exif = img_data[0]
-        self.size = img_data[1]
-        self.datetime = self.get_datetime()
+        self.exif, self.size = self.extract_data()
+        self.created = self.get_datetime()
 
     def extract_data(self):
         '''extracting image exif and size data'''
@@ -37,12 +36,15 @@ class ImageMeta():
         return exif_data, size
 
     def get_datetime(self):
+        '''Try to get creation date from exif or fallback to ctime. Return a datetime object'''
         datetime_str = self.exif.get("DateTime", None)
         if datetime_str:
-            pattern = r"(\d\d\d\d):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)"
-            datetime = re.search(pattern, datetime_str)
-            return datetime
-        return None
+            created = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
+            return created
+        else:
+            ctime = os.path.getctime(self.path)  # get creation/modification time
+            created = datetime.fromtimestamp(ctime).strftime("%Y:%m:%d %H:%M:%S")
+            return created
 
 
 def create_source_list(dir, valid_extensions):
@@ -68,10 +70,6 @@ def main():
         img_dir = sys.argv[1]
         source_list = create_source_list(img_dir, valid_extensions)
         images = [ImageMeta(*file_data) for file_data in source_list]
-
-        for img in images:
-            print(img.name)
-            print(img.get_datetime())
     else:
         sys.exit("""Correct input: 'python3 imagine.py <images_directory>'""")
 
