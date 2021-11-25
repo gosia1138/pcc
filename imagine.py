@@ -3,6 +3,7 @@
 import os
 import sys
 from datetime import datetime
+from math import acos, sin, cos, radians
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from shutil import copyfile
@@ -118,6 +119,19 @@ def create_subdir(img_dir):
             break
         n += 1
     return sub_dir
+
+
+def get_distance(img_1, img_2):
+    '''Calculate geographical distance (in meters) between two images'''
+    if not getattr(img_1, "coords", None) or not getattr(img_2, "coords", None):
+        return -1
+    lat1, long1 = map(radians, img_1.coords)
+    lat2, long2 = map(radians, img_2.coords)
+    d_long = abs(long1 - long2)
+    R = 6371000  # Appx. Earth radius in meters
+    # Spherical Law of Cosines formula
+    dist = acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(d_long)) * R
+    return dist
 
 
 def main():
