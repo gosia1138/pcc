@@ -19,11 +19,13 @@ class ImageMeta():
         self.exif, self.size = self.extract_data()
         self.created = self.get_datetime()
         # grouping data
-        self.grouping_factor = ""
+        self.grouping_factors = []
 
-    def grouping_dir(self):
+    def grouping_dir(self, sub_dir):
         '''returns a group subdirectory to which Image should be copied'''
-        grouping_dir = os.path.join(self.dir, "imagine_output", self.grouping_factor)
+        grouping_dir = os.path.join(self.dir, sub_dir)
+        for factor in self.grouping_factors:
+            grouping_dir = os.path.join(grouping_dir, factor)
         return grouping_dir, self.name
 
     def extract_data(self):
@@ -55,8 +57,11 @@ class ImageMeta():
             ctime = datetime.fromtimestamp(os.path.getctime(self.path))
             return ctime
 
-    def make_copy(self):
-        destination = os.path.join(*self.grouping_dir())
+    def make_copy(self, sub_dir):
+        destination_dir, file_name = self.grouping_dir(sub_dir)
+        if not os.path.isdir(destination_dir):
+            os.makedirs(destination_dir)
+        destination = os.path.join(destination_dir, file_name)
         if self.path != destination:
             copyfile(self.path, destination)
 
@@ -78,15 +83,29 @@ def create_source_list(img_dir, valid_extensions):
     return source
 
 
-def group_images(images, factor):
+def add_grouping_factor(images, factor):
     '''Add a grouping factor to each instance of ImageMeta'''
     for img in images:
-        grouping_factor = getattr(img.created, "{}".format(factor))
-        img.grouping_factor = str(grouping_factor)
-        grouping_dir, file_name = img.grouping_dir()
-        if not os.path.isdir(grouping_dir):
-            os.makedirs(grouping_dir)
-        img.make_copy()
+        # time factors
+        if factor == "year":
+            gf = (str(img.created.year), )
+        elif factor == "month":
+            gf = (img.created.strftime("%B"), )
+        elif factor == ("year", "month"):
+            gf = (str(img.created.year), img.created.strftime("%B"))
+        img.grouping_factors += gf
+
+
+def create_subdir(img_dir):
+    '''Create unique imagine sub-directory each run'''
+    n = 0
+    while True:
+        sub_dir = "imagine{}".format(str(n).zfill(2))
+        abs_sub = os.path.join(img_dir, sub_dir)
+        if not os.path.isdir(abs_sub):
+            break
+        n += 1
+    return sub_dir
 
 
 def main():
@@ -103,19 +122,21 @@ def main():
     actions = {
         "1": "year",
         "2": "month",
+        "3": ("year", "month"),
     }
     print("\nThere are {} images in {}".format(len(source_list), img_dir))
     print("Here is what you can do with them:")
     print("[1] Group by year")
     print("[2] Group by month")
+    print("[3] Group by year and month")
     print("[q] Quit")
     while True:
         users_choice = input("> ")
         if users_choice in actions.keys():
-            group_images(images, actions[users_choice])
+            add_grouping_factor(images, actions[users_choice])
+            subdir = create_subdir(img_dir)
             for img in images:
-                print(img.grouping_factor)
-                print(img.grouping_dir())
+                img.make_copy(subdir)
             break
         elif users_choice.lower() == "q":
             sys.exit("Goodbye!")
