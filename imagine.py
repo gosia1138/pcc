@@ -20,6 +20,7 @@ class ImageMeta():
         self.created = self.get_datetime()
         # grouping data
         self.grouping_factors = []
+        self.get_coords()
 
     def grouping_dir(self, sub_dir):
         '''returns a group subdirectory to which Image should be copied'''
@@ -56,6 +57,17 @@ class ImageMeta():
         else:  # get creation/modification time of the file
             ctime = datetime.fromtimestamp(os.path.getctime(self.path))
             return ctime
+
+    def get_coords(self):
+        GPSInfo = self.exif.get("GPSInfo", None)
+        if GPSInfo:
+            lat_d, lat_m, lat_s = [int(value) for value in GPSInfo["GPSLatitude"]]
+            lat_sign = GPSInfo["GPSLatitudeRef"]
+            lat = (lat_d + lat_m/60 + lat_s/3600) * (1 - 2*(lat_sign == "S"))
+            long_d, long_m, long_s = [int(value) for value in GPSInfo["GPSLongitude"]]
+            long_sign = GPSInfo["GPSLongitudeRef"]
+            long = (long_d + long_m/60 + long_s/3600) * (1 - 2*(long_sign == "W"))
+            self.coords = (lat, long)
 
     def make_copy(self, sub_dir):
         destination_dir, file_name = self.grouping_dir(sub_dir)
