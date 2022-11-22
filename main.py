@@ -8,6 +8,7 @@ from operator import attrgetter
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from shutil import copyfile
+from pcc.directory import Directory, GetJPGFilesStrategy
 
 
 class ImageMeta():
@@ -92,7 +93,7 @@ class Place():
         '''Go through all other images and check if they can be assigned this Place'''
         for img_2 in images:
             if not getattr(img_2, "place", None):
-                if self.get_distance(img_1, img_2) <= 200:  # DISTANCE IN METERS
+                if self.get_distance(img_1, img_2) <= 10000:  # DISTANCE IN METERS
                     img_2.place = self
 
     def get_distance(self, img_1, img_2):
@@ -154,23 +155,6 @@ class Timespace():
         return name
 
 
-def create_source_list(img_dir, valid_extensions):
-    '''Returning list of tuples representing images contained in the directory'''
-    if not os.path.isdir(img_dir):
-        sys.exit("Entered directory is not valid!")
-    source = []
-    files = os.listdir(img_dir)
-    for file_name in files:
-        file_path = os.path.join(img_dir, file_name)
-        f, file_extension = os.path.splitext(file_path)
-        if os.path.isdir(file_path):
-            continue    # skip directories
-        if file_extension.lower() not in valid_extensions:
-            continue    # skip files that do not have accepted extensions
-        source.append((file_path, img_dir, file_name, file_extension))
-    return source
-
-
 def add_grouping_factor(images, factor):
     '''Add a grouping factor to each instance of ImageMeta'''
     if factor in ["year", "month", ("year", "month")]:
@@ -219,10 +203,10 @@ def create_subdir(img_dir):
 
 def main():
     # create list of ImageMeta classes from given directory
-    valid_extensions = ('.jpg', '.jpeg')
     if len(sys.argv) == 2:
         img_dir = sys.argv[1]
-        source_list = create_source_list(img_dir, valid_extensions)
+        directory = Directory(img_dir, GetJPGFilesStrategy)
+        source_list = directory.get_list_of_tuples_temp()
         images = [ImageMeta(*file_data) for file_data in source_list]
         images = sorted(images, key=attrgetter("created"))
     else:
