@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timedelta
 from math import acos, sin, cos, radians
 from operator import attrgetter
-from pcc.directory import Directory, GetJPGFilesStrategy
+from pcc.directory import Directory, JPGFilterStrategy
 from pcc.images import ImageMeta
 
 
@@ -133,8 +133,8 @@ def create_subdir(img_dir):
 def main():
     # create list of ImageMeta classes from given directory
     if len(sys.argv) == 2:
-        img_dir = sys.argv[1]
-        directory = Directory(img_dir, GetJPGFilesStrategy)
+        dir = sys.argv[1]
+        directory = Directory(dir, JPGFilterStrategy)
         source_list = directory.get_list_of_tuples_temp()
         images = [ImageMeta(*file_data) for file_data in source_list]
         images = sorted(images, key=attrgetter("created"))
@@ -149,7 +149,7 @@ def main():
         "4": "place",
         "5": ("place", "date")
     }
-    print("\nThere are {} images in {}".format(len(source_list), img_dir))
+    print("\nThere are {} images in {}".format(len(source_list), dir))
     print("Here is what you can do with them:")
     print("[1] Group by year")
     print("[2] Group by month")
@@ -161,7 +161,7 @@ def main():
         users_choice = input("> ")
         if users_choice in actions.keys():
             add_grouping_factor(images, actions[users_choice])
-            subdir = create_subdir(img_dir)
+            subdir = create_subdir(dir)
             for img in images:
                 img.make_copy(subdir)
             break

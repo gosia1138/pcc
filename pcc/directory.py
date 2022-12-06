@@ -3,17 +3,20 @@ import os
 import sys
 
 
-class FilterStrategy(object):
-    def __init__(self, directory):
-        self.directory = directory
-        
+class FileFilterStrategy(ABC):
+    def __init__(self, dir):
+        self.dir = dir
+        self.files = [os.path.join(self.dir, file) for file in os.listdir(self.dir)]
+
+    @abstractmethod
+    def is_valid(self, file):
+        return not os.path.isdir(file)
+
     def get_files(self):
-        filenames = os.listdir(self.directory)
-        files = [os.path.join(self.directory, filename) for filename in filenames if not os.path.isdir(filename)]
-        return files
+        return list(filter(self.is_valid, self.files))
     
     
-class JPGFilterStrategy(FilterStrategy):
+class JPGFilterStrategy(FileFilterStrategy):
     
     EXTENSIONS = ['.jpg', '.jpeg']
     
@@ -21,14 +24,9 @@ class JPGFilterStrategy(FilterStrategy):
         path, extension = os.path.splitext(file)
         return extension.lower() in self.EXTENSIONS
 
-    def get_files(self):
-        all_files = super().get_files()
-        jpg_files = list(filter(self.is_valid, all_files))
-        return jpg_files
-    
 
 class Directory(object):
-    def __init__(self, directory, get_files_strategy: FilterStrategy = JPGFilterStrategy):
+    def __init__(self, directory, get_files_strategy: FileFilterStrategy = JPGFilterStrategy):
         ## TODO: Try...Except
         self.directory = directory
         self.is_valid()
