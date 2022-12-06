@@ -3,7 +3,7 @@ import os
 import sys
 
 
-class GetFilesStrategy(object):
+class FilterStrategy(object):
     def __init__(self, directory):
         self.directory = directory
         
@@ -13,7 +13,7 @@ class GetFilesStrategy(object):
         return files
     
     
-class GetJPGFilesStrategy(GetFilesStrategy):
+class JPGFilterStrategy(FilterStrategy):
     
     EXTENSIONS = ['.jpg', '.jpeg']
     
@@ -28,7 +28,7 @@ class GetJPGFilesStrategy(GetFilesStrategy):
     
 
 class Directory(object):
-    def __init__(self, directory, get_files_strategy: GetFilesStrategy = GetFilesStrategy):
+    def __init__(self, directory, get_files_strategy: FilterStrategy = JPGFilterStrategy):
         ## TODO: Try...Except
         self.directory = directory
         self.is_valid()
