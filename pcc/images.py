@@ -36,7 +36,6 @@ class ImageMeta():
                         gps_data[sub_decoded] = value[t]
                     exif_data[decoded] = gps_data
                     if gps_data:  # creating attribute "coords" from EXIF GPS data
-                        print(gps_data)
                         lat_d, lat_m, lat_s = [int(value) for value in gps_data["GPSLatitude"]]
                         lat_sign = gps_data["GPSLatitudeRef"]
                         lat = (lat_d + lat_m/60 + lat_s/3600) * (1 - 2*(lat_sign == "S"))
