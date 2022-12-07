@@ -1,0 +1,4 @@
+
+
+class InvalidDirectory(Exception):
+    pass

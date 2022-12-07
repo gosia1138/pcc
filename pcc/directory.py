@@ -1,3 +1,5 @@
+from .utils import InvalidDirectory
+
 from abc import ABC, abstractmethod
 import os
 import sys
@@ -8,7 +10,6 @@ class FileFilterStrategy(ABC):
         self.dir = dir
         self.files = [os.path.join(self.dir, file) for file in os.listdir(self.dir)]
 
-    @abstractmethod
     def is_valid(self, file):
         return not os.path.isdir(file)
 
@@ -36,8 +37,7 @@ class Directory(object):
         
     def is_valid(self):
         if not os.path.isdir(self.directory):
-        ## TODO: raise Exception
-            sys.exit("Entered directory is not valid!")
+            raise InvalidDirectory("Provided path is not a valid directory!")
             
     def is_empty(self):
         return not len(self.files)
