@@ -2,3 +2,4 @@ __pycache__
 *.pyc
 profile.out
 .pytest_cache
+test/test_files/*/
