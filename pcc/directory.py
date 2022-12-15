@@ -9,7 +9,7 @@ class Directory(object):
         self.directory = directory
         self.is_valid()
         self.get_files_strategy = get_files_strategy(directory)
-        self.files = self.get_files_strategy.get_files()
+        self.files = self.get_files_strategy.get_valid_paths()
         self.subdirectory = self.create_subdirectory()
         
     def is_valid(self):
@@ -39,11 +39,7 @@ class Directory(object):
     def get_list_of_tuples_temp(self):
         file_data_tuples = []
         for path in self.files:
-            file_path = path
-            img_dir = self.directory
-            file_name = os.path.basename(file_path)
-            f, file_extension = os.path.splitext(file_name)
-            file_data_tuples.append((file_path, img_dir, file_name, file_extension, self.subdirectory))
+            file_data_tuples.append((path.absolute(), self.subdirectory))
         return file_data_tuples
     
     
