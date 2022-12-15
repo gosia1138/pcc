@@ -1,4 +1,5 @@
-from ..pcc.directory import Directory, FileFilterStrategy, JPGFilterStrategy
+from ..pcc.directory import Directory
+from ..pcc.filter_strategies import FileFilterStrategy, JPGFilterStrategy
 from ..pcc.utils import InvalidDirectory
 
 import os

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from math import acos, sin, cos, radians
 from operator import attrgetter
 from pcc.directory import Directory, JPGFilterStrategy
-from pcc.images import ImageMeta
+from pcc.file_objects import ImageMeta
 
 
 class Place():
@@ -118,18 +118,6 @@ def add_grouping_factor(images, factor):
             img.grouping_factors.append(name)
 
 
-def create_subdir(img_dir):
-    '''Create unique imagine output directory each run'''
-    n = 0
-    while True:
-        sub_dir = "imagine{}".format(str(n).zfill(2))
-        abs_sub = os.path.join(img_dir, sub_dir)
-        if not os.path.isdir(abs_sub):
-            break
-        n += 1
-    return sub_dir
-
-
 def main():
     # create list of ImageMeta classes from given directory
     if len(sys.argv) == 2:
@@ -161,9 +149,8 @@ def main():
         users_choice = input("> ")
         if users_choice in actions.keys():
             add_grouping_factor(images, actions[users_choice])
-            subdir = create_subdir(dir)
             for img in images:
-                img.make_copy(subdir)
+                img.make_copy()
             break
         elif users_choice.lower() == "q":
             sys.exit("Goodbye!")

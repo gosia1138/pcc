@@ -1,29 +1,6 @@
 from .utils import InvalidDirectory
-
-from abc import ABC, abstractmethod
+from .filter_strategies import FileFilterStrategy, JPGFilterStrategy
 import os
-import sys
-
-
-class FileFilterStrategy(ABC):
-    def __init__(self, dir):
-        self.dir = dir
-        self.files = [os.path.join(self.dir, file) for file in os.listdir(self.dir)]
-
-    def is_valid(self, file):
-        return not os.path.isdir(file)
-
-    def get_files(self):
-        return list(filter(self.is_valid, self.files))
-    
-    
-class JPGFilterStrategy(FileFilterStrategy):
-    
-    EXTENSIONS = ['.jpg', '.jpeg']
-    
-    def is_valid(self, file):
-        path, extension = os.path.splitext(file)
-        return extension.lower() in self.EXTENSIONS
 
 
 class Directory(object):
@@ -33,7 +10,7 @@ class Directory(object):
         self.is_valid()
         self.get_files_strategy = get_files_strategy(directory)
         self.files = self.get_files_strategy.get_files()
-        self.sub_directory = None
+        self.subdirectory = self.create_subdirectory()
         
     def is_valid(self):
         if not os.path.isdir(self.directory):
@@ -47,6 +24,17 @@ class Directory(object):
         
     def get_number_of_files(self):
         return len(self.files)
+
+    def create_subdirectory(self):
+        '''Create unique imagine output directory each run'''
+        n = 0
+        while True:
+            subdirectory = "imagine{}".format(str(n).zfill(2))
+            abs_sub = os.path.join(self.directory, subdirectory)
+            if not os.path.isdir(abs_sub):
+                break
+            n += 1
+        return subdirectory
     
     def get_list_of_tuples_temp(self):
         file_data_tuples = []
@@ -55,7 +43,7 @@ class Directory(object):
             img_dir = self.directory
             file_name = os.path.basename(file_path)
             f, file_extension = os.path.splitext(file_name)
-            file_data_tuples.append((file_path, img_dir, file_name, file_extension))
+            file_data_tuples.append((file_path, img_dir, file_name, file_extension, self.subdirectory))
         return file_data_tuples
     
     

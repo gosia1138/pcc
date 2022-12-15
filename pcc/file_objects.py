@@ -6,13 +6,14 @@ from shutil import copyfile
 
 
 class ImageMeta():
-    def __init__(self, full_path, directory, filename, extension):
+    def __init__(self, full_path, directory, filename, extension, subdir):
         '''extract file info from path and collect other data from exif'''
         # image data
         self.path = full_path
         self.dir = directory
         self.name = filename
         self.type = extension
+        self.subdir = subdir
         self.extract_data()
         self.get_datetime()
         if not getattr(self, "coords", None):
@@ -58,18 +59,18 @@ class ImageMeta():
             created = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
         self.created = created
 
-    def grouping_dir(self, sub_dir):
+    def grouping_dir(self):
         '''returns a group subdirectory to which image should be copied'''
-        grouping_dir = os.path.join(self.dir, sub_dir)
+        grouping_dir = os.path.join(self.dir, self.subdir)
         for factor in self.grouping_factors:
             if factor == "unknown":
                 break
             grouping_dir = os.path.join(grouping_dir, str(factor))
         return grouping_dir, self.name
 
-    def make_copy(self, sub_dir):
+    def make_copy(self):
         '''Copy image into provided directory'''
-        destination_dir, file_name = self.grouping_dir(sub_dir)
+        destination_dir, file_name = self.grouping_dir()
         if not os.path.isdir(destination_dir):
             os.makedirs(destination_dir)
         destination = os.path.join(destination_dir, file_name)
