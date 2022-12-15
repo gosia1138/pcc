@@ -85,7 +85,7 @@ class Timespace():
 
 
 def add_grouping_factor(images, factor):
-    '''Add a grouping factor to each instance of ImageMeta'''
+    '''Add a grouping factor to each instance of JPGImage'''
     if factor in ["year", "month", ("year", "month")]:
         for img in images:
             if factor == "year":
@@ -119,7 +119,7 @@ def add_grouping_factor(images, factor):
 
 
 def main():
-    # create list of ImageMeta classes from given directory
+    # create list of JPGImage classes from given directory
     if len(sys.argv) == 2:
         dir = sys.argv[1]
         directory = Directory(dir, JPGFilterStrategy)
