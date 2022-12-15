@@ -5,7 +5,7 @@ import os
 from shutil import copyfile
 
 
-class ImageMeta():
+class JPGFile():
     def __init__(self, full_path, directory, filename, extension, subdir):
         '''extract file info from path and collect other data from exif'''
         # image data

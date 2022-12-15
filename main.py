@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from math import acos, sin, cos, radians
 from operator import attrgetter
 from pcc.directory import Directory, JPGFilterStrategy
-from pcc.file_objects import ImageMeta
+from pcc.file_objects import JPGFile
 
 
 class Place():
@@ -124,7 +124,7 @@ def main():
         dir = sys.argv[1]
         directory = Directory(dir, JPGFilterStrategy)
         source_list = directory.get_list_of_tuples_temp()
-        images = [ImageMeta(*file_data) for file_data in source_list]
+        images = [JPGFile(*file_data) for file_data in source_list]
         images = sorted(images, key=attrgetter("created"))
     else:
         sys.exit("Correct input: 'python3 imagine.py <images_directory>'")
