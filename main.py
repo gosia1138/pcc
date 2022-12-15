@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 from datetime import datetime, timedelta
 from math import acos, sin, cos, radians

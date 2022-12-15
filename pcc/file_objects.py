@@ -12,7 +12,6 @@ class AnyFile:
     # TODO: move to Directory
     subdir: str
 
-    
 
 @dataclass
 class JPGFile(AnyFile):
@@ -27,7 +26,8 @@ class JPGFile(AnyFile):
         if self.exif_data:
             self.coords = get_coordinates_from_exif_data(self.exif_data)
             self.created = get_datetime_from_exif_data(self.path.absolute(), self.exif_data)
-        if not self.coords:                 # TODO move to Place assigning function
+        # TODO move to Place assigning function
+        if not self.coords:                 
             self.place = "unknown"
 
     def grouping_dir(self):
