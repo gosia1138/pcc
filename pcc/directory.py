@@ -1,15 +1,15 @@
-from .utils import InvalidDirectory
+from .utils import InvalidDirectory, DirectoryGroupingMixin
 from .filter_strategies import FileFilterStrategy, JPGFilterStrategy
 import os
 
 
-class Directory(object):
+class Directory(DirectoryGroupingMixin):
     def __init__(self, directory, get_files_strategy: FileFilterStrategy = JPGFilterStrategy):
         ## TODO: Try...Except
         self.directory = directory
         self.is_valid()
         self.get_files_strategy = get_files_strategy(directory)
-        self.files = self.get_files_strategy.get_valid_paths()
+        self.files = self.get_files_strategy.get_files()
         self.subdirectory = self.create_subdirectory()
         
     def is_valid(self):
@@ -35,11 +35,4 @@ class Directory(object):
                 break
             n += 1
         return subdirectory
-    
-    def get_list_of_tuples_temp(self):
-        file_data_tuples = []
-        for path in self.files:
-            file_data_tuples.append((path.absolute(), self.subdirectory))
-        return file_data_tuples
-    
     

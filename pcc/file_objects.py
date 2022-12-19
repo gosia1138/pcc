@@ -1,7 +1,9 @@
-import os
-from shutil import copyfile
 from dataclasses import dataclass, field
-from .utils import get_coordinates_from_exif_data, get_exif_data, get_datetime_from_exif_data
+from .utils import (
+    get_coordinates_from_exif_data,
+    get_exif_data,
+    get_datetime_from_exif_data,
+    ObjectGroupingMixin)
 from typing import Any
 from datetime import datetime
 from pathlib import Path
@@ -9,13 +11,12 @@ from pathlib import Path
 @dataclass
 class AnyFile:
     path: Path
-    # TODO: move to Directory
-    subdir: str
 
 
 @dataclass
-class JPGFile(AnyFile):
+class JPGFile(ObjectGroupingMixin, AnyFile):
     place: str = field(init=False)
+    # TODO: move to AnyFile as taken from sys data, override in jpg from exif (if exists)
     created: datetime = field(init=False)
     exif_data: dict = field(default_factory=dict, init=False)
     coords: Any = field(init=False)
@@ -29,21 +30,3 @@ class JPGFile(AnyFile):
         # TODO move to Place assigning function
         if not self.coords:                 
             self.place = "unknown"
-
-    def grouping_dir(self):
-        '''returns a group subdirectory to which image should be copied'''
-        grouping_dir = os.path.join(self.path.parent, self.subdir)
-        for factor in self.grouping_factors:
-            if factor == "unknown":
-                break
-            grouping_dir = os.path.join(grouping_dir, str(factor))
-        return grouping_dir, self.path.name
-
-    def make_copy(self):
-        '''Copy file into provided directory'''
-        destination_dir, file_name = self.grouping_dir()
-        if not os.path.isdir(destination_dir):
-            os.makedirs(destination_dir)
-        destination = os.path.join(destination_dir, file_name)
-        if self.path.absolute != destination:
-            copyfile(self.path.absolute(), destination)
