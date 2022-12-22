@@ -9,6 +9,7 @@ class Place():
         self.name = self.coords.get_coordinates_as_str()
         print(self.name)
         self.name = input("How do we name this place?\n>")
+        # TODO secure from non-integer entries
         self.max_radius = int(input("How big is this place?\n>"))
         self.check_images()
 
