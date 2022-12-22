@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
-from .utils import (
+from .utils.exif_utils import (
     get_coordinates_from_exif_data,
     get_exif_data,
-    get_datetime_from_exif_data,
-    ObjectGroupingMixin)
+    get_datetime_from_exif_data)
+from .utils.mixins import ObjectGroupingMixin
 from typing import Any
 from datetime import datetime
 from pathlib import Path
+
 
 @dataclass
 class AnyFile:

@@ -1,4 +1,5 @@
-from .utils import InvalidDirectory, DirectoryGroupingMixin
+from .utils.exceptions import InvalidDirectory
+from .utils.mixins import DirectoryGroupingMixin
 from .filter_strategies import FileFilterStrategy, JPGFilterStrategy
 import os
 

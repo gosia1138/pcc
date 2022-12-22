@@ -3,3 +3,4 @@ __pycache__
 profile.out
 .pytest_cache
 test/test_files/*/
+.env

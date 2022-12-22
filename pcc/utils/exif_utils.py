@@ -2,6 +2,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from PIL import Image
 from datetime import datetime
 import os
+from .coordinates import GeographicalCoordinates
 
 def get_raw_exif_data(path):
     try:
@@ -37,7 +38,7 @@ def get_coordinates_from_exif_data(exif_data):
             long_d, long_m, long_s = [int(value) for value in gps_data["GPSLongitude"]]
             long_sign = gps_data["GPSLongitudeRef"]
             long = (long_d + long_m/60 + long_s/3600) * (1 - 2*(long_sign == "W"))
-            return (lat, long)
+            return GeographicalCoordinates(lat, long)
         except Exception:
             pass
     return None
