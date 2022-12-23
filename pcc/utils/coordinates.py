@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from math import acos, sin, cos, radians
+import os
+import requests
 
 
 @dataclass
@@ -23,3 +25,15 @@ class GeographicalCoordinates:
 
     def get_coordinates_as_str(self):
         return f"{self.latitude}_{self.longitude}"
+
+
+def get_address_dict_from_api(coords: GeographicalCoordinates):
+    api_endpoint = os.environ.get('LOCATIONIQ_ENDPOINT_URL')
+    api_key = os.environ.get('LOCATIONIQ_API_KEY')
+    lat = coords.latitude
+    lon = coords.longitude
+    zoom = 15
+    if api_endpoint and api_key:   
+        response = requests.get(f'{api_endpoint}/v1/reverse.php?key={api_key}&lat={lat}&lon={lon}&zoom={zoom}&format=json')
+        address_dict = response.json().get('address', {})   
+    return address_dict
