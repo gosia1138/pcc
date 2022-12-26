@@ -43,9 +43,8 @@ def get_coordinates_from_exif_data(exif_data):
             pass
     return None
 
-def get_datetime_from_exif_data(path, exif_data):
-    created = datetime.fromtimestamp(os.path.getctime(path))
+def get_datetime_from_exif_data(exif_data):
     datetime_str = exif_data.get("DateTime", None)
     if datetime_str:
-        created = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
-    return created
+        return datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
+    return None
