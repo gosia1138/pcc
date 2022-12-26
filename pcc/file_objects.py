@@ -27,10 +27,13 @@ class JPGFile(ObjectGroupingMixin, AnyFile):
     grouping_factors: list[str] = field(default_factory=list, init=False)
   
     def __post_init__(self):
+        super().__post_init__()
         self.exif_data = get_exif_data(self.path.absolute())
         if self.exif_data:
             self.coords = get_coordinates_from_exif_data(self.exif_data)
-            self.created = get_datetime_from_exif_data(self.exif_data) or self.created
+            exif_created = get_datetime_from_exif_data(self.exif_data)
+            if exif_created:
+                self.created = exif_created
         # TODO move to Place assigning function
         if not self.coords:                 
             self.place = "unknown"
