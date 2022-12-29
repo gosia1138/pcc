@@ -17,7 +17,7 @@ class ObjectGroupingMixin(object):
         grouping_dir = os.path.join(self.path.parent, subdirectory)
         for factor in self.grouping_factors:
             if factor == "unknown":
-                break
+                continue
             grouping_dir = os.path.join(grouping_dir, str(factor))
         return grouping_dir, self.path.name
 

@@ -6,7 +6,6 @@ import os
 
 class Directory(DirectoryGroupingMixin):
     def __init__(self, directory, get_files_strategy: FileFilterStrategy = JPGFilterStrategy):
-        ## TODO: Try...Except
         self.directory = directory
         self.is_valid()
         self.get_files_strategy = get_files_strategy(directory)

@@ -25,7 +25,7 @@ if __name__ == '__main__':
         usage='main.py <directory> <options>',
         description="Program to sort photos from your mobile phone or camera by means of date or/and place.")
     parser.add_argument("directory", help="Directory to images you want to group", type=Path)
-    grouping_factor = parser.add_mutually_exclusive_group(required=True)
+    grouping_factor = parser.add_argument_group()
     grouping_factor.add_argument("-y", "--year", help="Group images in given directory by year", dest='grouping_factors', action='append_const', const=1)
     grouping_factor.add_argument("-m", "--month", help="Group images in given directory by month", dest='grouping_factors', action='append_const', const=2)
     grouping_factor.add_argument("-d", "--date", help="Group images in given directory by year and then month", dest='grouping_factors', action='append_const', const=3)
@@ -33,14 +33,15 @@ if __name__ == '__main__':
     grouping_factor.add_argument("-s", "--smart", help="Smart Grouping (place and date)", dest='grouping_factors', action='append_const', const=5)
     args = parser.parse_args()
 
-    args_grouping_factor_index = args.grouping_factors[0]
+    args_grouping_factors = args.grouping_factors
     args_directory = args.directory
 
     directory = Directory(args_directory, JPGFilterStrategy)
+    grouping_strategies = list(map(lambda x: grouping_actions_strategies.get(x), args_grouping_factors))
 
-    grouping_strategy = grouping_actions_strategies.get(args_grouping_factor_index)
-    directory.set_grouping_strategy(grouping_strategy)
-    directory.add_grouping_factors_to_files()
+    for grouping_strategy in grouping_strategies:
+        directory.set_grouping_strategy(grouping_strategy)
+        directory.add_grouping_factors_to_files()
     directory.copy_files()
 
     print(f"\n{directory.get_number_of_files()} images from {directory.directory} processed successfully!")

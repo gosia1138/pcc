@@ -2,6 +2,7 @@ from ..file_objects import JPGFile
 from datetime import datetime, timedelta
 from .coordinates import get_address_dict_from_api
 import pprint
+from .utils import get_valid_filename
 
 class Place():
 
@@ -12,14 +13,20 @@ class Place():
         self.get_user_input()
         self.check_images()
 
-    def get_user_input(self):
+    def display_geographical_information(self):
         print(self.coords.get_coordinates_as_str())
         pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(self.address_dict)
-        # TODO secure from invalid folder names
-        self.name = input("How do we name this place?\n>")
-        # TODO secure from non-integer entries
-        self.max_radius = int(input("How far away photos should be included in that place? [km]\n>")) * 1000
+
+    def get_user_input(self):
+        self.display_geographical_information()
+        self.name = get_valid_filename(input("How do we name this place? (leave blank to ignore)\n>"))
+        while True:
+            try:
+                self.max_radius = int(input("How far away photos should be included in that place? [km]\n>") or 0) * 1000
+                break
+            except ValueError:
+                print("Please provide a valid integer!")
 
     def check_images(self):
         '''Go through all other images and check if they can be assigned this Place'''
