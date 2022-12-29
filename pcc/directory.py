@@ -9,7 +9,7 @@ class Directory(DirectoryGroupingMixin):
         self.directory = directory
         self.is_valid()
         self.get_files_strategy = get_files_strategy(directory)
-        self.files = self.get_files_strategy.get_files()
+        self.files = sorted(self.get_files_strategy.get_files(), key=lambda x: getattr(x, 'created'))
         self.subdirectory = self.create_subdirectory()
         
     def is_valid(self):
