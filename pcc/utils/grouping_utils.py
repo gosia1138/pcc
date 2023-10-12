@@ -48,6 +48,7 @@ class Timespace():
         if so updates self start/end and assigns itself to given image'''
         starts = img_src.created
         ends = img_src.created
+        # TODO allow user input as with distances
         for img in images:
             if img.place == self.place:
                 if img.created >= starts and img.created <= ends:

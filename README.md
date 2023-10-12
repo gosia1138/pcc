@@ -26,7 +26,7 @@ Grouping factors options:
 
 So for example to group pictures from mixed_photos subfolder of your Pictures folder by places and dates (Smart Grouping) the command used should look as follows:
 ```
-
+python main.py /home/user_name/Pictures/mixed_photos -s
 ```
 ## Features
 During each run script creates a directory that contains sub-directories with images sorted by different criteria. Currently it is possible to sort according to:  
