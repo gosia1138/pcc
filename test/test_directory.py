@@ -1,6 +1,6 @@
 from ..pcc.directory import Directory
 from ..pcc.filter_strategies import FileFilterStrategy, JPGFilterStrategy
-from ..pcc.utils import InvalidDirectory
+from ..pcc.utils.exceptions import InvalidDirectory
 
 import os
 import pytest
